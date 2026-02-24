@@ -25,6 +25,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.material3.Button
 import androidx.compose.foundation.clickable
+import androidx.compose.material3.Switch
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 
 class MainActivity : ComponentActivity() {
@@ -37,7 +40,7 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-enum class Screen { Welcome, Summary }
+enum class Screen { Welcome, Summary, Settings }
 
 @Composable
 fun UsageSummaryApp() {
@@ -46,17 +49,25 @@ fun UsageSummaryApp() {
     MaterialTheme {
         when (currentScreen.value) {
             Screen.Welcome -> WelcomeScreen(
-                onStartClick = { currentScreen.value = Screen.Summary }
+                onStartClick = { currentScreen.value = Screen.Summary },
+                onSettingsClick = { currentScreen.value = Screen.Settings }
             )
             Screen.Summary -> UsageSummaryScreen(
                 onBackClick = { currentScreen.value = Screen.Welcome }
             )
+            Screen.Settings -> SettingsScreen(
+                onBackClick = { currentScreen.value = Screen.Welcome }
+            )
         }
+
     }
 }
 
 @Composable
-fun WelcomeScreen(onStartClick: () -> Unit) {
+fun WelcomeScreen(
+    onStartClick: () -> Unit,
+    onSettingsClick: () -> Unit
+) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -86,10 +97,17 @@ fun WelcomeScreen(onStartClick: () -> Unit) {
                 Button(onClick = onStartClick) {
                     Text("See Usage Summary")
                 }
+
+                Text(
+                    "Privacy & Settings",
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.clickable { onSettingsClick() }
+                )
             }
         }
     }
 }
+
 
 
 
@@ -174,6 +192,89 @@ fun GarmentRow(garment: Garment) {
     }
 }
 
+
+@Composable
+fun SettingsScreen(onBackClick: () -> Unit) {
+    var keepDataOnDevice by remember { mutableStateOf(true) }
+    var shareUsageSummaries by remember { mutableStateOf(false) }
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(24.dp),
+        verticalArrangement = Arrangement.spacedBy(24.dp)
+    ) {
+        Text(
+            "< Back",
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.clickable { onBackClick() }
+        )
+
+        Text(
+            "Privacy & Settings",
+            style = MaterialTheme.typography.headlineSmall
+        )
+
+        // Switch 1
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surfaceVariant
+            )
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column {
+                    Text("Keep data on this device")
+                    Text(
+                        "Store detailed usage data only on this phone.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+                Switch(
+                    checked = keepDataOnDevice,
+                    onCheckedChange = { keepDataOnDevice = it }
+                )
+            }
+        }
+
+        // Switch 2
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surfaceVariant
+            )
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column {
+                    Text("Share usage summaries")
+                    Text(
+                        "Allow sending wear/wash counts (no personal data).",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+                Switch(
+                    checked = shareUsageSummaries,
+                    onCheckedChange = { shareUsageSummaries = it }
+                )
+            }
+        }
+    }
+}
 
 
 
